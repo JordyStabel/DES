@@ -24,10 +24,12 @@ namespace DES_Jordy_Stabel
         int[][] subKeys = new int[16][];
         int[][] Keys = new int[16][];
 
-        string[] extededKeys = new string[16];
+        int[] extededKeys = new int[48];
 
-        int[] left_0;
-        int[] right_0;
+        int[] left_0 = new int[32];
+        int[] right_0 = new int[32];
+
+        int[][] rightKeys = new int[17][];
 
         int[] IP;
 
@@ -268,28 +270,51 @@ namespace DES_Jordy_Stabel
                 CreatingKeys(i);
             }
 
-
-
-            // ===================================DONE TILL HERE==============================================================================
-            // ===================================DONE TILL HERE==============================================================================
-            // ===================================DONE TILL HERE==============================================================================
-            // ===================================DONE TILL HERE==============================================================================
-            // ===================================DONE TILL HERE==============================================================================
-
-
-
             // Creating a permutation from the message
             IP = Create_IP(binaryMessage);
-            Console.Write(Environment.NewLine + "IP: ");
+            Console.Write("\nInitial permutation: \t");
             foreach (int number in IP)
             {
                 Console.Write(number);
             }
 
-            // Creating a left and right
-            //left_0 = IP.Substring(32);
-            //right_0 = IP.Substring(32, 32);
-            Console.WriteLine("Left: " + left_0 + Environment.NewLine + "Right: " + right_0);
+            // Splitting the IP in two parts 
+            for (int i = 0; i < IP.Length - 1; i++)
+            {
+                if (i < 32)
+                {
+                    left_0[i] = IP[i]; 
+                }
+                else
+                {
+                    right_0[i - 32] = IP[i];
+                }
+            }
+
+            rightKeys[0] = right_0;
+
+            Console.Write("\nLeft: \t\t\t");
+            foreach (int number in left_0)
+            {
+                Console.Write(number);
+            }
+
+            Console.Write("\nRight: \t\t\t");
+            foreach (int number in rightKeys[0])
+            {
+                Console.Write(number);
+            }
+
+            extededKeys[0] = BitExtender(rightKeys[0]);
+
+
+            // ===================================DONE TILL HERE==============================================================================
+            // ===================================DONE TILL HERE==============================================================================
+            // ===================================DONE TILL HERE==============================================================================
+            // ===================================DONE TILL HERE==============================================================================
+            // ===================================DONE TILL HERE==============================================================================
+
+
 
             // Make the 32 bit right_0 into a 48 bit key
             //int[] firstExtendedKey = BitExtender(right_0);
@@ -422,27 +447,40 @@ namespace DES_Jordy_Stabel
             return result;
         }
 
-        //private int[] BitExtender (int[] input)
-        //{
-        //    int[] extendedKey = new int[48];
-        //    string extendedKey = string.Empty;
+        private int[] BitExtender(int[] input)
+        {
+            int[] extendedKey = new int[48];
+            int j = 0;
 
-        //    for (int i = 0; i < input.Length; i++)
-        //    {
+            //string extendedKey = string.Empty;
 
-        //    }
+            foreach (int index in bitExtenderOrder)
+            {
+                extendedKey[j] = input[index - 1];
+                j++;
+            }
+            Console.Write("\n\nExtended key: \t\t");
+            foreach (int number in extendedKey)
+            {
+                Console.Write(number);
+            }
 
-        //    for (int i = 0; i < 1; i++)
-        //    {
-        //        foreach (int index in bitExtenderOrder)
-        //        {
-        //            extendedKey += input[index - 1];
-        //        }
-        //        extededKeys[i] = extendedKey;
-        //        Console.WriteLine(extendedKey);
-        //    }
-        //    return extendedKey;
-        //}
+            //for (int i = 0; i < input.Length; i++)
+            //{
+
+            //}
+
+            //for (int i = 0; i < 1; i++)
+            //{
+            //    foreach (int index in bitExtenderOrder)
+            //    {
+            //        extendedKey += input[index - 1];
+            //    }
+            //    extededKeys[i] = extendedKey;
+            //    Console.WriteLine(extendedKey);
+            //}
+            return extendedKey;
+        }
 
         //private int[] RightRound_1(int[] input, int round)
         //{
@@ -462,7 +500,7 @@ namespace DES_Jordy_Stabel
         //    }
         //    return result;
         //}
-        
+
         // Input --> result form RightRound_1
         private int[] RightRound_2 (int[] input)
         {
