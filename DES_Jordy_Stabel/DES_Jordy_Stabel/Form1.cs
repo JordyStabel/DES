@@ -21,7 +21,8 @@ namespace DES_Jordy_Stabel
         int[] C_keys = new int[28];
         int[] D_keys = new int[28];
 
-        int[] subKeys = new int[16];
+        int[][] subKeys = new int[16][];
+        int[][] Keys = new int[16][];
 
         string[] extededKeys = new string[16];
 
@@ -233,11 +234,11 @@ namespace DES_Jordy_Stabel
             }
 
             Console.Write("\n\nC left shift keys:");
-            C_leftShiftedKeys[0] = LeftShift(C_keys);
+            C_leftShiftedKeys[0] = C_keys;
 
-            for (int i = 1; i < leftShifts.Length; i++)
+            for (int i = 1; i <= leftShifts.Length; i++)
             {
-                C_leftShiftedKeys[i] = LeftShift(C_leftShiftedKeys[i - 1]);
+                C_leftShiftedKeys[i] = LeftShift(C_leftShiftedKeys[i - 1], (i - 1));
                 Console.Write("\nRound " + i + ": \t\t");
                 foreach (int number in C_leftShiftedKeys[i])
                 {
@@ -246,11 +247,11 @@ namespace DES_Jordy_Stabel
             }
 
             Console.Write("\n\nD left shift keys:");
-            D_leftShiftedKeys[0] = LeftShift(D_keys);
+            D_leftShiftedKeys[0] = D_keys;
 
-            for (int i = 1; i < leftShifts.Length; i++)
+            for (int i = 1; i <= leftShifts.Length; i++)
             {
-                D_leftShiftedKeys[i] = LeftShift(D_leftShiftedKeys[i - 1]);
+                D_leftShiftedKeys[i] = LeftShift(D_leftShiftedKeys[i - 1], (i - 1));
                 Console.Write("\nRound " + i + ": \t\t");
                 foreach (int number in D_leftShiftedKeys[i])
                 {
@@ -258,13 +259,24 @@ namespace DES_Jordy_Stabel
                 }
             }
 
-            // Creating the full subkeys, from the C & D subkey parts
-            for (int i = 0; i < 15; i++)
+            Console.Write("\n\nSubkeys:");
+            // Creating the full temp-subkeys, from the C & D subkey parts
+            for (int i = 1; i <= 16; i++)
             {
-                
+                CreatingSubKeys(i);
+                Console.Write("\nKey" + i + ":\t\t\t");
+                CreatingKeys(i);
             }
 
-            CreatingSubKeys(0);
+
+
+            // ===================================DONE TILL HERE==============================================================================
+            // ===================================DONE TILL HERE==============================================================================
+            // ===================================DONE TILL HERE==============================================================================
+            // ===================================DONE TILL HERE==============================================================================
+            // ===================================DONE TILL HERE==============================================================================
+
+
 
             // Creating a permutation from the message
             IP = Create_IP(binaryMessage);
@@ -330,92 +342,34 @@ namespace DES_Jordy_Stabel
                 result[i] = input[firstKeyOrder[i] - 1];
             }
 
-            //input.Replace(" - ", "");
-            //string firstKey = string.Empty;
-
-            //foreach (int index in firstKeyOrder)
-            //{
-            //    firstKey += input[index - 1];
-            //}
-
             return result;
         }
 
-        private int[] LeftShift (int[] keyArray)
+        private int[] LeftShift (int[] keyArray, int round)
         {
             int[] key = new int[28];
-            int round = 0;
 
             for (int i = 0; i <= keyArray.Length - 1; i++)
             {
                 // If the index is less than 0 and the amount of numbers that have been moved from the back to front (32 becomes 1) is less than the number of leftshifts
-                if (i + leftShifts[round] > 27)
+                if (i + leftShifts[round] >= 28)
                 {
                     key[i] = keyArray[i + leftShifts[round] - 28];
                 }
                 else
                 {
-                    key[i] = keyArray[i+ leftShifts[round]];
+                    key[i] = keyArray[i + leftShifts[round]];
                 }
             }
 
             return key;
-
-            //Console.Write(Environment.NewLine + "C_Keys leftshift: ");
-            //foreach (int number in key)
-            //{
-            //    Console.Write(number);
-            //}
         }
 
-        //private void LeftShift(string[] keyArray)
-        //{
-        //    for (int i = 0; i <= keyArray.Length; i++)
-        //    {
-        //        if (i == 15)
-        //        {
-        //            keyArray[i + 1] = keyArray[0];
-        //            Console.WriteLine(keyArray[0] + Environment.NewLine);
-        //            break;
-        //        }
-        //        string substring_One = keyArray[i].Substring(leftShifts[i]);
-        //        string substring_Two = keyArray[i].Substring(0, leftShifts[i]);
-        //        keyArray[i + 1] = substring_One + substring_Two;
-        //        Console.WriteLine(substring_One + substring_Two);
-        //    }
-        //}
-
-        //        string[] temp = new string[28];
-
-        //            for (int x = 0; x<keyArray.Length - 1; x++)
-        //            {
-        //                temp[x] = keyArray[x].ToString();
-        //    }
-
-        //    temp.ToString();
-
-        //            for (int i = 0; i <= temp.Length; i++)
-        //            {
-        //                if (i == 15)
-        //                {
-        //                    temp[i + 1] = temp[0];
-        //                    for (int j = 0; j<temp.Length - 1; j++)
-        //                    {
-        //                        keyArray[j] = Int32.Parse(temp[j]);
-        //                    }
-        //                    break;
-        //                }
-        //                string substring_One = temp[i].Substring(leftShifts[i]);
-        //string substring_Two = temp[i].Substring(0, leftShifts[i]);
-        //temp[i + 1] = substring_One + substring_Two;
-        //            }
-
-        private int[] CreatingSubKeys (int round)
+        private void CreatingSubKeys (int round)
         {
-            int[] key = new int[48];
             int[] temp = new int[56];
 
-            for (int i = 0; i < 55; i++)
+            for (int i = 0; i < 56; i++)
             {
                 if (i <= 27)
                 {
@@ -427,16 +381,31 @@ namespace DES_Jordy_Stabel
                 }
             }
 
-            Console.Write("\nFirst temp key: ");
+            subKeys[round - 1] = temp;
+
+            Console.Write("\nC" + round + "D" + round + "\t\t\t");
             foreach (int number in temp)
             {
                 Console.Write(number);
             }
+        }
 
+        private void CreatingKeys (int round)
+        {
+            int[] key = new int[48];
+            int i = 0;
 
+            foreach (int index in secondKeyOrder)
+            {
+                key[i] = subKeys[round - 1][index - 1];
+                i++;
+            }
 
-
-            return temp;
+            foreach (int number in key)
+            {
+                Console.Write(number);
+            }
+            Console.Write("\n");
         }
 
         private int[] Create_IP (int[] input)
@@ -573,3 +542,7 @@ namespace DES_Jordy_Stabel
 // First temp key --> works
 // 00000000000111111110000111101100100100010110000000011010
 // 00000000000111111110000111101100100100010110000000011010
+
+// Actual keys --> work
+// 100011101100000101110011101010000000100001111011
+// 100011101100000101110011101010000000100001111011
