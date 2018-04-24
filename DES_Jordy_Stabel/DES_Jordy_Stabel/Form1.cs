@@ -24,7 +24,7 @@ namespace DES_Jordy_Stabel
         int[][] subKeys = new int[16][];
         int[][] Keys = new int[16][];
 
-        int[] extededKeys = new int[48];
+        int[][] extededKeys = new int[16][];
 
         int[] left_0 = new int[32];
         int[] right_0 = new int[32];
@@ -104,6 +104,7 @@ namespace DES_Jordy_Stabel
         int[][] S8 = new int[4][];
 
         int[][][] blocks = new int[8][][];
+
 
         public Form1()
         {
@@ -186,7 +187,7 @@ namespace DES_Jordy_Stabel
             // Convert and store key to hexadecimal
             hexKey = ToHex(key);
             Console.WriteLine("Hex Key: \t\t" + hexKey);
-            
+
             // Convert and store message to hexadecimal
             hexMessage = ToHex(message);
             Console.WriteLine("Hex Message: \t\t" + hexMessage);
@@ -283,7 +284,7 @@ namespace DES_Jordy_Stabel
             {
                 if (i < 32)
                 {
-                    left_0[i] = IP[i]; 
+                    left_0[i] = IP[i];
                 }
                 else
                 {
@@ -305,7 +306,17 @@ namespace DES_Jordy_Stabel
                 Console.Write(number);
             }
 
+            // Needs to be done with all rightkeys but with the output form the last step
             extededKeys[0] = BitExtender(rightKeys[0]);
+
+            //for (int i = 0; i < extededKeys.Length - 1; i++)
+            //{
+            //    extededKeys[i] = BitExtender(rightKeys[i]);
+            //}
+
+
+            // Right round one
+            int[] RightRound_1_Result = RightRound_1(extededKeys[0], 1);
 
 
             // ===================================DONE TILL HERE==============================================================================
@@ -426,6 +437,8 @@ namespace DES_Jordy_Stabel
                 i++;
             }
 
+            Keys[round - 1] = key;
+
             foreach (int number in key)
             {
                 Console.Write(number);
@@ -451,9 +464,7 @@ namespace DES_Jordy_Stabel
         {
             int[] extendedKey = new int[48];
             int j = 0;
-
-            //string extendedKey = string.Empty;
-
+            
             foreach (int index in bitExtenderOrder)
             {
                 extendedKey[j] = input[index - 1];
@@ -465,41 +476,27 @@ namespace DES_Jordy_Stabel
                 Console.Write(number);
             }
 
-            //for (int i = 0; i < input.Length; i++)
-            //{
-
-            //}
-
-            //for (int i = 0; i < 1; i++)
-            //{
-            //    foreach (int index in bitExtenderOrder)
-            //    {
-            //        extendedKey += input[index - 1];
-            //    }
-            //    extededKeys[i] = extendedKey;
-            //    Console.WriteLine(extendedKey);
-            //}
             return extendedKey;
         }
 
-        //private int[] RightRound_1(int[] input, int round)
-        //{
-        //    int[] result = new int[48];
-        //    int columnIndex = 0;
+        private int[] RightRound_1(int[] input, int round)
+        {
+            int[] result = new int[48];
+            int columnIndex = 0;
 
-        //    for (int i = 0; i < input.Length; i++)
-        //    {
-        //        string key = subKeys[round - 1];
-        //        result[i] = ((input[i] + key[columnIndex]) % 2);
-        //    }
-        //    Console.WriteLine("Step 1: ");
+            for (int i = 0; i < input.Length; i++)
+            {
+                //string key = subKeys[round - 1].ToString();
+                result[i] = ((input[i] + Keys[round - 1][i]) % 2);
+            }
+            Console.Write("\nStep 1: \t\t");
 
-        //    foreach (int x in result)
-        //    {
-        //        Console.Write(x);
-        //    }
-        //    return result;
-        //}
+            foreach (int x in result)
+            {
+                Console.Write(x);
+            }
+            return result;
+        }
 
         // Input --> result form RightRound_1
         private int[] RightRound_2 (int[] input)
@@ -581,6 +578,14 @@ namespace DES_Jordy_Stabel
 // 00000000000111111110000111101100100100010110000000011010
 // 00000000000111111110000111101100100100010110000000011010
 
-// Actual keys --> work
+// Actual keys --> works
 // 100011101100000101110011101010000000100001111011
 // 100011101100000101110011101010000000100001111011
+
+// Extended key --> works
+// 000000000001011110100000000000000000001100001000
+// 000000000001011110100000000000000000001100001000
+
+// Step one --> works
+// 110100001001000100001010010001110010001101011110
+// 110100001001000100001010010001110010001101011110
