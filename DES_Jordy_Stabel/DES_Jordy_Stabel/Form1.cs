@@ -319,7 +319,10 @@ namespace DES_Jordy_Stabel
             int[] RightRound_1_Result = RightRound_1(extededKeys[0], 1);
 
             // Right round two
-            RightRound_2(RightRound_1_Result);
+            int[] RightRound_2_Result = RightRound_2(RightRound_1_Result);
+
+            // Right round three, also need result from round 1
+            RightRound_3(RightRound_1_Result);
 
 
             // ===================================DONE TILL HERE==============================================================================
@@ -504,10 +507,12 @@ namespace DES_Jordy_Stabel
         private int[] RightRound_2 (int[] input)
         {
             int[] result = new int[8];
+            int index = 0;
 
-            for (int i = 0; i < (input.Length - 1) / 6; i++)
+            for (int i = 0; i < input.Length - 1; i += 6)
             {
-                result[i] = ((input[i] * 2) + input[i + 5]);
+                result[index] = ((input[i] * 2) + input[i + 5]);
+                index++;
             }
 
             Console.Write("\nStep 2: \t\t");
@@ -519,24 +524,46 @@ namespace DES_Jordy_Stabel
 
             return result;
         }
-        
-        private int RightRound_3 (string input)
+
+        private int[] RightRound_3(int[] input)
         {
-            int index = 1;
-            int multiplier = 8;
+            int[] result = new int[8];
+            int index = 0;
 
-            int a = Int32.Parse(input.Substring(index, 1));
-            index++;
-            int b = Int32.Parse(input.Substring(index, 1));
-            index++;
-            int c = Int32.Parse(input.Substring(index, 1));
-            index++;
-            int d = Int32.Parse(input.Substring(index, 1));
+            for (int i = 0; i < input.Length - 1; i += 6)
+            {
+                // 8 --> 4 --> 2 --> 1
+                result[index] = ((input[i + 1] * 8) + (input[i + 2] * 4) + (input[i + 3] * 2) + input[i + 4]);
+                index++;
+            }
 
-            int result = ((a * multiplier) + (b * (multiplier / 2)) + (c * (multiplier / 4)) + d);
+            Console.Write("\nStep 3: \t\t");
+
+            foreach (int x in result)
+            {
+                Console.Write(x + "  ");
+            }
 
             return result;
         }
+
+        //private int RightRound_3 (string input)
+        //{
+        //    int index = 1;
+        //    int multiplier = 8;
+
+        //    int a = Int32.Parse(input.Substring(index, 1));
+        //    index++;
+        //    int b = Int32.Parse(input.Substring(index, 1));
+        //    index++;
+        //    int c = Int32.Parse(input.Substring(index, 1));
+        //    index++;
+        //    int d = Int32.Parse(input.Substring(index, 1));
+
+        //    int result = ((a * multiplier) + (b * (multiplier / 2)) + (c * (multiplier / 4)) + d);
+
+        //    return result;
+        //}
 
         private int Fourth_XOR_Step(string input, int indexer)
         {
@@ -599,3 +626,11 @@ namespace DES_Jordy_Stabel
 // Step one --> works
 // 110100001001000100001010010001110010001101011110
 // 110100001001000100001010010001110010001101011110
+
+// Step two --> works
+// 2 1 0 0 1 2 1 0
+// 2 1 0 0 1 2 1 0
+
+// Step three --> works
+// 10  4  2  5  8  9  6  15
+// 10  4  2  5  8  9  6  15
