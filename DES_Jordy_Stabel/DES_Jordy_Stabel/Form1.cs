@@ -318,6 +318,9 @@ namespace DES_Jordy_Stabel
             // Right round one
             int[] RightRound_1_Result = RightRound_1(extededKeys[0], 1);
 
+            // Right round two
+            RightRound_2(RightRound_1_Result);
+
 
             // ===================================DONE TILL HERE==============================================================================
             // ===================================DONE TILL HERE==============================================================================
@@ -482,7 +485,6 @@ namespace DES_Jordy_Stabel
         private int[] RightRound_1(int[] input, int round)
         {
             int[] result = new int[48];
-            int columnIndex = 0;
 
             for (int i = 0; i < input.Length; i++)
             {
@@ -503,14 +505,22 @@ namespace DES_Jordy_Stabel
         {
             int[] result = new int[8];
 
-            for (int i = 0; i < 48; i += 6)
+            for (int i = 0; i < (input.Length - 1) / 6; i++)
             {
                 result[i] = ((input[i] * 2) + input[i + 5]);
             }
+
+            Console.Write("\nStep 2: \t\t");
+
+            foreach (int x in result)
+            {
+                Console.Write(x + "  ");
+            }
+
             return result;
         }
         
-        private int Third_XOR_Step (string input)
+        private int RightRound_3 (string input)
         {
             int index = 1;
             int multiplier = 8;
