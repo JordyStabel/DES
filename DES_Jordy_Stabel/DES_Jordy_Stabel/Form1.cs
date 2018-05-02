@@ -322,7 +322,38 @@ namespace DES_Jordy_Stabel
             int[] RightRound_2_Result = RightRound_2(RightRound_1_Result);
 
             // Right round three, also need result from round 1
-            RightRound_3(RightRound_1_Result);
+            int[] RightRound_3_Result = RightRound_3(RightRound_1_Result);
+
+            // Right roud four
+            int[] RightRound_4_Result = RightRound_4(RightRound_2_Result, RightRound_3_Result);
+
+            //int[] RightRound_4_Binary_Result = ToBinary(input);
+            string test = string.Empty;
+
+            // Right round 4.1 (back to binary)
+            for (int i = 0; i < RightRound_4_Result.Length; i++)
+            {
+                test += Convert.ToString(RightRound_4_Result[i], 2).PadLeft(4, '0');
+                Console.Write("\n \t\t\t\t" + test);
+            }
+
+            Console.Write("\nBack to binary: \t\t\t" + test);
+
+            //string input = string.Empty;
+
+            //foreach (int number in RightRound_4_Result)
+            //{
+            //    input += number;
+            //}
+
+
+            //int[] RightRound_4_Binary_Result = ToBinary(input);
+
+            //Console.Write("\nBinary: \t\t");
+            //foreach (int number in RightRound_4_Binary_Result)
+            //{
+            //    Console.Write(number);
+            //}
 
 
             // ===================================DONE TILL HERE==============================================================================
@@ -363,7 +394,7 @@ namespace DES_Jordy_Stabel
         // Converts input to binary
         private int[] ToBinary (string input)
         {
-            int[] result = new int[64];
+            int[] result = new int[input.Length * 4];
 
             string temp = string.Join(string.Empty, input.Select(c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')));
 
@@ -466,7 +497,7 @@ namespace DES_Jordy_Stabel
             return result;
         }
 
-        private int[] BitExtender(int[] input)
+        private int[] BitExtender (int[] input)
         {
             int[] extendedKey = new int[48];
             int j = 0;
@@ -525,7 +556,7 @@ namespace DES_Jordy_Stabel
             return result;
         }
 
-        private int[] RightRound_3(int[] input)
+        private int[] RightRound_3 (int[] input)
         {
             int[] result = new int[8];
             int index = 0;
@@ -547,23 +578,24 @@ namespace DES_Jordy_Stabel
             return result;
         }
 
-        //private int RightRound_3 (string input)
-        //{
-        //    int index = 1;
-        //    int multiplier = 8;
+        private int[] RightRound_4(int[] round_2, int[] round_3)
+        {
+            int[] result = new int[8];
 
-        //    int a = Int32.Parse(input.Substring(index, 1));
-        //    index++;
-        //    int b = Int32.Parse(input.Substring(index, 1));
-        //    index++;
-        //    int c = Int32.Parse(input.Substring(index, 1));
-        //    index++;
-        //    int d = Int32.Parse(input.Substring(index, 1));
+            for (int i = 0; i < round_2.Length; i++)
+            {
+                result[i] = blocks[i][round_2[i]][round_3[i]];
+            }
 
-        //    int result = ((a * multiplier) + (b * (multiplier / 2)) + (c * (multiplier / 4)) + d);
+            Console.Write("\nStep 4: \t\t");
 
-        //    return result;
-        //}
+            foreach (int x in result)
+            {
+                Console.Write(x + "  ");
+            }
+
+            return result;
+        }
 
         private int Fourth_XOR_Step(string input, int indexer)
         {
@@ -571,12 +603,6 @@ namespace DES_Jordy_Stabel
 
             int result = blocks[0][rowIdex][indexer];
             return result;
-        }
-
-        private void RightRound(string input)
-        {
-
-
         }
 
         private int[] ToIntArray (string[] input)
@@ -634,3 +660,11 @@ namespace DES_Jordy_Stabel
 // Step three --> works
 // 10  4  2  5  8  9  6  15
 // 10  4  2  5  8  9  6  15
+
+// Step four --> works
+// 9  15  9  6  5  0  1  7
+// 9  15  9  6  5  0  1  7
+
+// Step four to binary --> doesn't work
+// 1001 1111 1001 0110 0101 0000 0001 0111
+// 1001 1111 1001 0110 0101 0000 0001 0111
