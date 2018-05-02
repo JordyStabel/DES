@@ -92,6 +92,14 @@ namespace DES_Jordy_Stabel
             28, 29, 30, 31, 32, 1
         };
 
+        int[] S_Permutation = new int[]
+        {
+            16, 7,  20, 21, 29, 12, 28, 17,
+            1,  15, 23, 26, 5,  18, 31, 10,
+            2,  8,  24, 14, 32, 27, 3,  9,
+            19, 13, 30, 6,  22, 11, 4,  25
+        };
+
         #endregion
 
         int[][] S1 = new int[4][];
@@ -334,26 +342,37 @@ namespace DES_Jordy_Stabel
             for (int i = 0; i < RightRound_4_Result.Length; i++)
             {
                 test += Convert.ToString(RightRound_4_Result[i], 2).PadLeft(4, '0');
-                Console.Write("\n \t\t\t\t" + test);
             }
 
-            Console.Write("\nBack to binary: \t\t\t" + test);
+            Console.Write("\nBack to binary: \t" + test);
 
-            //string input = string.Empty;
+            int[] Round4_Binary = new int[test.Length];
 
-            //foreach (int number in RightRound_4_Result)
-            //{
-            //    input += number;
-            //}
+            for (int i = 0; i < Round4_Binary.Length; i++)
+            {
+                Round4_Binary[i] = Convert.ToInt32(test.Substring(i, 1));
+            }
 
+            int[] RightRound_5_Result = S_Block_Permutation(Round4_Binary);
+            Console.Write("\nS block permutation: \t");
+            foreach (int number in RightRound_5_Result)
+            {
+                Console.Write(number);
+            }
 
-            //int[] RightRound_4_Binary_Result = ToBinary(input);
+            int[] EndRoundResult = new int[32];
 
-            //Console.Write("\nBinary: \t\t");
-            //foreach (int number in RightRound_4_Binary_Result)
-            //{
-            //    Console.Write(number);
-            //}
+            for (int i = 0; i < EndRoundResult.Length - 1; i++)
+            {
+                EndRoundResult[i] = ((left_0[i] + RightRound_5_Result[i]) % 2);
+            }
+            Console.Write("\n\nRight 1: \t\t");
+            foreach (int number in EndRoundResult)
+            {
+                Console.Write(number);
+            }
+
+            // TODO: Repeat this 15 times, each time with the 'right key' as input for the next round
 
 
             // ===================================DONE TILL HERE==============================================================================
@@ -597,6 +616,18 @@ namespace DES_Jordy_Stabel
             return result;
         }
 
+        private int[] S_Block_Permutation(int[] input)
+        {
+            int[] result = new int[input.Length];
+
+            for (int i = 0; i < S_Permutation.Length; i++)
+            {
+                result[i] = input[S_Permutation[i] - 1];
+            }
+
+            return result;
+        }
+
         private int Fourth_XOR_Step(string input, int indexer)
         {
             int rowIdex = Int32.Parse(input);
@@ -665,6 +696,15 @@ namespace DES_Jordy_Stabel
 // 9  15  9  6  5  0  1  7
 // 9  15  9  6  5  0  1  7
 
-// Step four to binary --> doesn't work
+// Step four to binary --> works
 // 1001 1111 1001 0110 0101 0000 0001 0111
 // 1001 1111 1001 0110 0101 0000 0001 0111
+
+// S block permutation --> works
+// 01100110110011100101100100110010
+// 01100110110011100101100100110010
+
+// Right 1 --> works
+// 01101001001100111101001001100100
+// 01101001001100111101001001100100
+
