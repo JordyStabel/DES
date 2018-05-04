@@ -8,6 +8,9 @@ namespace DES_Jordy_Stabel
 {
     public partial class Form1 : Form
     {
+        string key;
+        string message;
+
         string hexKey;
         string hexMessage;
 
@@ -124,7 +127,6 @@ namespace DES_Jordy_Stabel
 
         int[][][] blocks = new int[8][][];
 
-
         public Form1()
         {
             InitializeComponent();
@@ -181,13 +183,19 @@ namespace DES_Jordy_Stabel
             blocks[5] = S6;
             blocks[6] = S7;
             blocks[7] = S8;
+
+            Console.WriteLine("Please enter a 64bit key:");
+            key = Console.ReadLine();
+            Console.WriteLine("Please enter a 64bit message:");
+            message = Console.ReadLine();
+            Calculate();
         }
 
-        private void Btn_Calculate_Click(object sender, EventArgs e)
+        private void Calculate()
         {
-            hexKey = ToHex(tb_Key.Text);
+            hexKey = ToHex(key);
 
-            hexMessage = ToHex(tb_Message.Text);
+            hexMessage = ToHex(message);
 
             binaryKey = ToBinary(hexKey);
 
