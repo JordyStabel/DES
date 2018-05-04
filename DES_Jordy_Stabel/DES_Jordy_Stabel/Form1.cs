@@ -7,9 +7,6 @@ namespace DES_Jordy_Stabel
 {
     public partial class Form1 : Form
     {
-        string key;
-        string message;
-
         string hexKey;
         string hexMessage;
 
@@ -18,6 +15,7 @@ namespace DES_Jordy_Stabel
 
         int[] mainKey = new int[56];
 
+        bool isC_keys = true;
         int[] C_keys = new int[28];
         int[] D_keys = new int[28];
 
@@ -100,6 +98,18 @@ namespace DES_Jordy_Stabel
             19, 13, 30, 6,  22, 11, 4,  25
         };
 
+        int[] FinalPermutation = new int[]
+        {
+            40, 8, 48, 16, 56, 24, 64, 32,
+            39, 7, 47, 15, 55, 23, 63, 31,
+            38, 6, 46, 14, 54, 22, 62, 30,
+            37, 5, 45, 13, 53, 21, 61, 29,
+            36, 4, 44, 12, 52, 20, 60, 28,
+            35, 3, 43, 11, 51, 19, 59, 27,
+            34, 2, 42, 10, 50, 18, 58, 26,
+            33, 1, 41, 9 , 49, 17, 57, 25
+        };
+
         #endregion
 
         int[][] S1 = new int[4][];
@@ -172,77 +182,26 @@ namespace DES_Jordy_Stabel
             blocks[7] = S8;
         }
 
-        // Convert input to Hexadecimal
-        private string ToHex (string input)
-        {
-            string result = string.Empty;
-            char[] array = input.ToCharArray();
-
-            foreach (char letter in array)
-            {
-                int value = Convert.ToInt32(letter);
-                result += string.Format("{0:x}", value).ToUpper();
-            }
-            return result;
-        }
-
         private void Btn_Calculate_Click(object sender, EventArgs e)
         {
-            // Store the orignal inputs
-            key = tb_Key.Text;
-            message = tb_Message.Text;
-
             // Convert and store key to hexadecimal
-            hexKey = ToHex(key);
-            Console.WriteLine("Hex Key: \t\t" + hexKey);
+            hexKey = ToHex(tb_Key.Text);
 
             // Convert and store message to hexadecimal
-            hexMessage = ToHex(message);
-            Console.WriteLine("Hex Message: \t\t" + hexMessage);
+            hexMessage = ToHex(tb_Message.Text);
 
             // Convert and store hex_key to binary
             binaryKey = ToBinary(hexKey);
-            Console.Write("\nBinary Key: \t\t");
-            foreach (var item in binaryKey)
-            {
-                Console.Write(item.ToString());
-            }
 
             // Convert and store hex_message to binary
             binaryMessage = ToBinary(hexMessage);
-            Console.Write("\nBinary Message: \t");
-            foreach (var item in binaryMessage)
-            {
-                Console.Write(item.ToString());
-            }
 
             // Conevert and store the first key
             mainKey = FirstKeyPermutation(binaryKey);
-            Console.Write("\n\nFirst permution: \t");
-            foreach (var item in mainKey)
-            {
-                Console.Write(item.ToString());
-            }
 
             // Creating the first 2 subkeys
-            for (int i = 0; i < 28; i++)
-            {
-                C_keys[i] = mainKey[i];
-            }
-            Console.Write("\n\nC_Key: \t\t\t");
-            foreach (int number in C_keys)
-            {
-                Console.Write(number);
-            }
-            for (int i = 0; i < 28; i++)
-            {
-                D_keys[i] = mainKey[i + 28];
-            }
-            Console.Write("\nD_Key: \t\t\t");
-            foreach (int number in D_keys)
-            {
-                Console.Write(number);
-            }
+            C_keys = SplitFirstKey(mainKey);
+            D_keys = SplitFirstKey(mainKey);
 
             Console.Write("\n\nC left shift keys:");
             C_leftShiftedKeys[0] = C_keys;
@@ -314,100 +273,130 @@ namespace DES_Jordy_Stabel
                 Console.Write(number);
             }
 
-            // Needs to be done with all rightkeys but with the output form the last step
-            extededKeys[0] = BitExtender(rightKeys[0]);
+            for (int i = 0; i < 16; i++)
+            {
+                extededKeys[i] = BitExtender(rightKeys[i]);
 
-            //for (int i = 0; i < extededKeys.Length - 1; i++)
-            //{
-            //    extededKeys[i] = BitExtender(rightKeys[i]);
-            //}
+                int[] RightRound_1_Result = RightRound_1(extededKeys[i], i + 1);
 
+                int[] RightRound_2_Result = RightRound_2(RightRound_1_Result);
 
-            // Right round one
-            int[] RightRound_1_Result = RightRound_1(extededKeys[0], 1);
+                int[] RightRound_3_Result = RightRound_3(RightRound_1_Result);
 
-            // Right round two
-            int[] RightRound_2_Result = RightRound_2(RightRound_1_Result);
+                int[] RightRound_4_Result = RightRound_4(RightRound_2_Result, RightRound_3_Result);
 
-            // Right round three, also need result from round 1
-            int[] RightRound_3_Result = RightRound_3(RightRound_1_Result);
+                string temp = string.Empty;
+                for (int j = 0; j < RightRound_4_Result.Length; j++)
+                {
+                    temp += Convert.ToString(RightRound_4_Result[j], 2).PadLeft(4, '0');
+                }
+                Console.Write("\nBack to binary: \t" + temp);
 
-            // Right roud four
-            int[] RightRound_4_Result = RightRound_4(RightRound_2_Result, RightRound_3_Result);
+                int[] Round4_Binary = new int[temp.Length];
+
+                for (int k = 0; k < Round4_Binary.Length; k++)
+                {
+                    Round4_Binary[k] = Convert.ToInt32(temp.Substring(k, 1));
+                }
+
+                int[] RightRound_5_Result = S_Block_Permutation(Round4_Binary);
+                Console.Write("\nS block permutation: \t");
+                foreach (int number in RightRound_5_Result)
+                {
+                    Console.Write(number);
+                }
+
+                int[] EndRoundResult = new int[32];
+
+                for (int x = 0; x < EndRoundResult.Length - 1; x++)
+                {
+                    if (i == 0)
+                    {
+                        EndRoundResult[x] = ((left_0[x] + RightRound_5_Result[x]) % 2);
+                    }
+                    else
+                    {
+                        EndRoundResult[x] = ((rightKeys[i - 1][x] + RightRound_5_Result[x]) % 2);
+                    }
+                }
+                Console.Write("\n\nRight " + (i + 1) + ": \t\t");
+                foreach (int number in EndRoundResult)
+                {
+                    Console.Write(number);
+                }
+                rightKeys[i + 1] = EndRoundResult;
+            }
+
+            //// Needs to be done with all rightkeys but with the output form the last step
+            //extededKeys[0] = BitExtender(rightKeys[0]);
+
+            //// Right round one
+            //int[] RightRound_1_Result = RightRound_1(extededKeys[0], 1);
+
+            //// Right round two
+            //int[] RightRound_2_Result = RightRound_2(RightRound_1_Result);
+
+            //// Right round three, also need result from round 1
+            //int[] RightRound_3_Result = RightRound_3(RightRound_1_Result);
+
+            //// Right roud four
+            //int[] RightRound_4_Result = RightRound_4(RightRound_2_Result, RightRound_3_Result);
 
             //int[] RightRound_4_Binary_Result = ToBinary(input);
-            string test = string.Empty;
+            //string test = string.Empty;
 
-            // Right round 4.1 (back to binary)
-            for (int i = 0; i < RightRound_4_Result.Length; i++)
-            {
-                test += Convert.ToString(RightRound_4_Result[i], 2).PadLeft(4, '0');
-            }
-
-            Console.Write("\nBack to binary: \t" + test);
-
-            int[] Round4_Binary = new int[test.Length];
-
-            for (int i = 0; i < Round4_Binary.Length; i++)
-            {
-                Round4_Binary[i] = Convert.ToInt32(test.Substring(i, 1));
-            }
-
-            int[] RightRound_5_Result = S_Block_Permutation(Round4_Binary);
-            Console.Write("\nS block permutation: \t");
-            foreach (int number in RightRound_5_Result)
-            {
-                Console.Write(number);
-            }
-
-            int[] EndRoundResult = new int[32];
-
-            for (int i = 0; i < EndRoundResult.Length - 1; i++)
-            {
-                EndRoundResult[i] = ((left_0[i] + RightRound_5_Result[i]) % 2);
-            }
-            Console.Write("\n\nRight 1: \t\t");
-            foreach (int number in EndRoundResult)
-            {
-                Console.Write(number);
-            }
-
-            // TODO: Repeat this 15 times, each time with the 'right key' as input for the next round
-
-
-            // ===================================DONE TILL HERE==============================================================================
-            // ===================================DONE TILL HERE==============================================================================
-            // ===================================DONE TILL HERE==============================================================================
-            // ===================================DONE TILL HERE==============================================================================
-            // ===================================DONE TILL HERE==============================================================================
-
-
-
-            // Make the 32 bit right_0 into a 48 bit key
-            //int[] firstExtendedKey = BitExtender(right_0);
-
-            // XOR with right_0
-            //int[] RightRound_1_Result = RightRound_1(firstExtendedKey, 1);
-
-            // Second part of XOR
-            //int[] RightRound_2_Result = RightRound_2(RightRound_1_Result);
-            //Console.WriteLine("Step 2: ");
-            //foreach (int number in RightRound_2_Result)
+            //// Right round 4.1 (back to binary)
+            //for (int i = 0; i < RightRound_4_Result.Length; i++)
             //{
-            //    Console.Write(number + " ");
+            //    test += Convert.ToString(RightRound_4_Result[i], 2).PadLeft(4, '0');
             //}
 
-            // Third part of XOR
-            //int XOR_Part_Three = Third_XOR_Step(XOR_key);
-            //Console.WriteLine("Second number: " + XOR_Part_Three);
+            //Console.Write("\nBack to binary: \t" + test);
 
-            // Fourth part of XOR      
-            //string XOR_Part_Four = Fourth_XOR_Step(XOR_Part_Two, XOR_Part_Three).ToString();
-            //Console.WriteLine("Third number: " + XOR_Part_Four);
+            //int[] Round4_Binary = new int[test.Length];
 
-            // Fifth part of XOR
-            //string result = ToBinary(XOR_Part_Four);
-            //Console.WriteLine(result);
+            //for (int i = 0; i < Round4_Binary.Length; i++)
+            //{
+            //    Round4_Binary[i] = Convert.ToInt32(test.Substring(i, 1));
+            //}
+
+            //int[] RightRound_5_Result = S_Block_Permutation(Round4_Binary);
+            //Console.Write("\nS block permutation: \t");
+            //foreach (int number in RightRound_5_Result)
+            //{
+            //    Console.Write(number);
+            //}
+
+            //int[] EndRoundResult = new int[32];
+            //// Need to store damn and increase the index
+            //// rightKeys[1] = EndRoundResult;
+
+            //for (int i = 0; i < EndRoundResult.Length - 1; i++)
+            //{
+            //    EndRoundResult[i] = ((left_0[i] + RightRound_5_Result[i]) % 2);
+            //}
+            //Console.Write("\n\nRight 1: \t\t");
+            //foreach (int number in EndRoundResult)
+            //{
+            //    Console.Write(number);
+            //}
+
+            // TODO: Repeat this 15 times, each time with the 'right key' as input for the next round
+        }
+
+        // Convert input to Hexadecimal
+        private string ToHex(string input)
+        {
+            string result = string.Empty;
+            char[] array = input.ToCharArray();
+
+            foreach (char letter in array)
+            {
+                int value = Convert.ToInt32(letter);
+                result += string.Format("{0:x}", value).ToUpper();
+            }
+            Console.WriteLine("Hex: \t\t\t" + result);
+            return result;
         }
 
         // Converts input to binary
@@ -421,7 +410,11 @@ namespace DES_Jordy_Stabel
             {
                 result[i] = Int32.Parse(temp.Substring(i, 1));
             }
-
+            Console.Write("\nBinary: \t\t");
+            foreach (var number in result)
+            {
+                Console.Write(number.ToString());
+            }
             return result;
         }
 
@@ -432,6 +425,36 @@ namespace DES_Jordy_Stabel
             for (int i = 0; i < firstKeyOrder.Length; i++)
             {
                 result[i] = input[firstKeyOrder[i] - 1];
+            }
+
+            Console.Write("\n\nFirst permution: \t");
+            foreach (var number in result)
+            {
+                Console.Write(number.ToString());
+            }
+
+            return result;
+        }
+
+        private int[] SplitFirstKey (int[] input)
+        {
+            int[] result = new int[input.Length / 2];
+            int delta = 0;
+
+            if (!isC_keys)
+            {
+                delta = 28;
+            }
+
+            for (int i = 0; i < 28; i++)
+            {
+                result[i] = mainKey[i + delta];
+            }
+            isC_keys = false;
+            Console.Write("\n\nKey: \t\t\t");
+            foreach (int number in result)
+            {
+                Console.Write(number);
             }
 
             return result;
@@ -627,84 +650,5 @@ namespace DES_Jordy_Stabel
 
             return result;
         }
-
-        private int Fourth_XOR_Step(string input, int indexer)
-        {
-            int rowIdex = Int32.Parse(input);
-
-            int result = blocks[0][rowIdex][indexer];
-            return result;
-        }
-
-        private int[] ToIntArray (string[] input)
-        {
-            int[] result = new int[input.Length];
-
-            for (int i = 0; i < input.Length - 1; i++)
-            {
-                result[i] = Int32.Parse(input[i]);
-            }
-            return result;
-        }
-
-        private string[] ToStringArray (int[] input)
-        {
-            string[] result = new string[input.Length];
-
-            for (int i = 0; i < input.Length - 1; i++)
-            {
-                result[i] = input[i].ToString();
-            }
-            return result;
-        }
     }
 }
-
-// Step one --> works
-// 110100001001000100001010010001110010001101011110
-// 110100001001000100001010010001110010001101011110
-
-// First permutation --> works
-// 00000000000011111111000011110110010010001011000000001101
-// 00000000000011111111000011110110010010001011000000001101
-
-// First temp key --> works
-// 00000000000111111110000111101100100100010110000000011010
-// 00000000000111111110000111101100100100010110000000011010
-
-// Actual keys --> works
-// 100011101100000101110011101010000000100001111011
-// 100011101100000101110011101010000000100001111011
-
-// Extended key --> works
-// 000000000001011110100000000000000000001100001000
-// 000000000001011110100000000000000000001100001000
-
-// Step one --> works
-// 110100001001000100001010010001110010001101011110
-// 110100001001000100001010010001110010001101011110
-
-// Step two --> works
-// 2 1 0 0 1 2 1 0
-// 2 1 0 0 1 2 1 0
-
-// Step three --> works
-// 10  4  2  5  8  9  6  15
-// 10  4  2  5  8  9  6  15
-
-// Step four --> works
-// 9  15  9  6  5  0  1  7
-// 9  15  9  6  5  0  1  7
-
-// Step four to binary --> works
-// 1001 1111 1001 0110 0101 0000 0001 0111
-// 1001 1111 1001 0110 0101 0000 0001 0111
-
-// S block permutation --> works
-// 01100110110011100101100100110010
-// 01100110110011100101100100110010
-
-// Right 1 --> works
-// 01101001001100111101001001100100
-// 01101001001100111101001001100100
-
