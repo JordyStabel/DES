@@ -184,6 +184,8 @@ namespace DES_Jordy_Stabel
             blocks[6] = S7;
             blocks[7] = S8;
 
+            Console.ForegroundColor = ConsoleColor.Green;
+
             Console.WriteLine("Please enter a 64bit key:");
             key = Console.ReadLine();
             Console.WriteLine("Please enter a 64bit message:");
@@ -339,7 +341,8 @@ namespace DES_Jordy_Stabel
 
             string endResult = BinaryStringToHexString(endResultInput);
 
-            Console.Write("\n\nFinal key: \t" + endResult);
+            Console.Write("\n\nFinal key: \t\t" + endResult);
+            this.WindowState = FormWindowState.Minimized;
         }
 
         private string ToHex(string input)
@@ -657,7 +660,7 @@ namespace DES_Jordy_Stabel
                 result[i] = input[FinalPermutation[i] - 1];
             }
 
-            Console.Write("\n\nFinal permutation: \t\t");
+            Console.Write("\n\nFinal permutation: \t");
             foreach (int number in result)
             {
                 Console.Write(number);
