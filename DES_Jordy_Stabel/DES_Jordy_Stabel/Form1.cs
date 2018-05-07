@@ -8,6 +8,8 @@ namespace DES_Jordy_Stabel
 {
     public partial class Form1 : Form
     {
+        string endResult = string.Empty;
+
         string key;
         string message;
 
@@ -186,18 +188,18 @@ namespace DES_Jordy_Stabel
 
             Console.ForegroundColor = ConsoleColor.Green;
 
-            Console.WriteLine("Please enter a 64bit key:");
-            key = Console.ReadLine();
-            Console.WriteLine("Please enter a 64bit message:");
-            message = Console.ReadLine();
-            Calculate();
+            startMenu();
         }
 
         private void Calculate()
         {
+            #region Part 1
+
+            var watch1 = System.Diagnostics.Stopwatch.StartNew();
+            
             hexKey = ToHex(key);
 
-            hexMessage = ToHex(message);
+            hexMessage = ToHex(CheckMessage(message));
 
             binaryKey = ToBinary(hexKey);
 
@@ -242,107 +244,134 @@ namespace DES_Jordy_Stabel
                 CreatingKeys(i);
             }
 
-            IP = Create_IP(binaryMessage);
-            Console.Write("\nInitial permutation: \t");
-            foreach (int number in IP)
-            {
-                Console.Write(number);
-            }
+            watch1.Stop();
+            
 
-            for (int i = 0; i < IP.Length - 1; i++)
+            #endregion
+
+            #region Part 2
+
+            var watch2 = System.Diagnostics.Stopwatch.StartNew();
+
+            for (int a = 0; a < (binaryMessage.Length / 64); a++)
             {
-                if (i < 32)
+                int[] ipInput = new int[64];
+
+                for (int b = 0; b < 63; b++)
                 {
-                    left_0[i] = IP[i];
-                }
-                else
-                {
-                    right_0[i - 32] = IP[i];
-                }
-            }
-
-            rightKeys[0] = right_0;
-
-            Console.Write("\nLeft: \t\t\t");
-            foreach (int number in left_0)
-            {
-                Console.Write(number);
-            }
-
-            Console.Write("\nRight: \t\t\t");
-            foreach (int number in rightKeys[0])
-            {
-                Console.Write(number);
-            }
-
-            for (int i = 0; i < 16; i++)
-            {
-                extededKeys[i] = BitExtender(rightKeys[i]);
-
-                int[] RightRound_1_Result = RightRound_1(extededKeys[i], i + 1);
-
-                int[] RightRound_2_Result = RightRound_2(RightRound_1_Result);
-
-                int[] RightRound_3_Result = RightRound_3(RightRound_1_Result);
-
-                int[] RightRound_4_Result = RightRound_4(RightRound_2_Result, RightRound_3_Result);
-
-                string temp = string.Empty;
-                for (int j = 0; j < RightRound_4_Result.Length; j++)
-                {
-                    temp += Convert.ToString(RightRound_4_Result[j], 2).PadLeft(4, '0');
-                }
-                Console.Write("\nBack to binary: \t" + temp);
-
-                int[] Round4_Binary = new int[temp.Length];
-
-                for (int k = 0; k < Round4_Binary.Length; k++)
-                {
-                    Round4_Binary[k] = Convert.ToInt32(temp.Substring(k, 1));
+                    ipInput[b] = binaryMessage[(a * 64) + b];
                 }
 
-                int[] RightRound_5_Result = S_Block_Permutation(Round4_Binary);
-                Console.Write("\nS block permutation: \t");
-                foreach (int number in RightRound_5_Result)
+                IP = Create_IP(ipInput);
+                Console.Write("\nInitial permutation: \t");
+                foreach (int number in IP)
                 {
                     Console.Write(number);
                 }
 
-                RightRound_5(RightRound_5_Result, i);
-            }
-
-            int[] FinalKeyReverse = new int[64];
-
-            for (int i = 0; i < FinalKeyReverse.Length; i++)
-            {
-                if (i < 32)
+                for (int i = 0; i < IP.Length - 1; i++)
                 {
-                    FinalKeyReverse[i] = rightKeys[16][i];
+                    if (i < 32)
+                    {
+                        left_0[i] = IP[i];
+                    }
+                    else
+                    {
+                        right_0[i - 32] = IP[i];
+                    }
                 }
-                else
+
+                rightKeys[0] = right_0;
+
+                Console.Write("\nLeft: \t\t\t");
+                foreach (int number in left_0)
                 {
-                    FinalKeyReverse[i] = rightKeys[15][i - 32];
+                    Console.Write(number);
                 }
+
+                Console.Write("\nRight: \t\t\t");
+                foreach (int number in rightKeys[0])
+                {
+                    Console.Write(number);
+                }
+
+                for (int i = 0; i < 16; i++)
+                {
+                    extededKeys[i] = BitExtender(rightKeys[i]);
+
+                    int[] RightRound_1_Result = RightRound_1(extededKeys[i], i + 1);
+
+                    int[] RightRound_2_Result = RightRound_2(RightRound_1_Result);
+
+                    int[] RightRound_3_Result = RightRound_3(RightRound_1_Result);
+
+                    int[] RightRound_4_Result = RightRound_4(RightRound_2_Result, RightRound_3_Result);
+
+                    string temp = string.Empty;
+                    for (int j = 0; j < RightRound_4_Result.Length; j++)
+                    {
+                        temp += Convert.ToString(RightRound_4_Result[j], 2).PadLeft(4, '0');
+                    }
+                    Console.Write("\nBack to binary: \t" + temp);
+
+                    int[] Round4_Binary = new int[temp.Length];
+
+                    for (int k = 0; k < Round4_Binary.Length; k++)
+                    {
+                        Round4_Binary[k] = Convert.ToInt32(temp.Substring(k, 1));
+                    }
+
+                    int[] RightRound_5_Result = S_Block_Permutation(Round4_Binary);
+                    Console.Write("\nS block permutation: \t");
+                    foreach (int number in RightRound_5_Result)
+                    {
+                        Console.Write(number);
+                    }
+
+                    RightRound_5(RightRound_5_Result, i);
+                }
+
+                int[] FinalKeyReverse = new int[64];
+
+                for (int i = 0; i < FinalKeyReverse.Length; i++)
+                {
+                    if (i < 32)
+                    {
+                        FinalKeyReverse[i] = rightKeys[16][i];
+                    }
+                    else
+                    {
+                        FinalKeyReverse[i] = rightKeys[15][i - 32];
+                    }
+                }
+                Console.Write("\n\nSemi-final key: \t");
+                foreach (int number in FinalKeyReverse)
+                {
+                    Console.Write(number);
+                }
+
+                int[] secondToLastKey = Final_Permutation(FinalKeyReverse);
+
+                string endResultInput = string.Empty;
+
+                foreach (var number in secondToLastKey)
+                {
+                    endResultInput += number;
+                }
+
+                endResult += BinaryStringToHexString(endResultInput);
+
             }
-            Console.Write("\n\nSemi-final key: \t");
-            foreach (int number in FinalKeyReverse)
-            {
-                Console.Write(number);
-            }
 
-            int[] secondToLastKey = Final_Permutation(FinalKeyReverse);
-
-            string endResultInput = string.Empty;
-
-            foreach (var number in secondToLastKey)
-            {
-                endResultInput += number;
-            }
-
-            string endResult = BinaryStringToHexString(endResultInput);
-
+            watch2.Stop();
             Console.Write("\n\nFinal key: \t\t" + endResult);
+            Console.WriteLine("\nPart 1 took (ms): \t" + watch1.ElapsedMilliseconds);
+            Console.WriteLine("Part 2 took (ms): \t" + watch2.ElapsedMilliseconds + "\n\n");
             this.WindowState = FormWindowState.Minimized;
+
+            startMenu();
+
+            #endregion
         }
 
         private string ToHex(string input)
@@ -666,6 +695,35 @@ namespace DES_Jordy_Stabel
                 Console.Write(number);
             }
             return result;
+        }
+
+        private string CheckMessage(string input)
+        {
+            string result = input;
+
+            int increaseBy = 0;
+
+            while ((input.Length + increaseBy) % 8 != 0)
+            {
+                increaseBy++;
+            }
+
+            for (int i = 0; i < increaseBy; i++)
+            {
+                result += " ";
+            }
+
+            return result;
+        }
+
+        private void startMenu()
+        {
+            endResult = string.Empty;
+            Console.WriteLine("Please enter a 64bit key:");
+            key = Console.ReadLine();
+            Console.WriteLine("Please enter a 64bit message:");
+            message = Console.ReadLine();
+            Calculate();
         }
     }
 }
